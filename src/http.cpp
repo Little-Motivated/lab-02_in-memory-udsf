@@ -23,19 +23,33 @@ void registerHandlers(httplib::Server &server, UDSF &udsf) {
     server.Put("/nudsf/v1/:realmId/:storageId/records/:recordId",
                [&udsf](const httplib::Request &req, httplib::Response &res) {
                    std::cout << "createOrModifyRecord\n";
+                   Status status = DEFAULT;
                    udsf.createOrModifyRecord(
                        RecordPath(req.path_params.at("realmId"),
                                   req.path_params.at("storageId"),
                                   req.path_params.at("recordId")),
-                       req.body);
+                       req.body, status);
+                   if (status == CREATED) {
+                       res.status = 201;
+                   } else if (status == FOUND) {
+                       res.status = 204;
+                   }
                });  // createOrModifyRecord
 
     server.Delete("/nudsf/v1/:realmId/:storageId/records/:recordId",
                   [&udsf](const httplib::Request &req, httplib::Response &res) {
                       std::cout << "deleteRecord\n";
-                      std::cout << req.path_params.at("realmId") << "\n";
-                      std::cout << req.path_params.at("storageId") << "\n";
-                      std::cout << req.path_params.at("recordId") << "\n";
+                      Status status = DEFAULT;
+                      udsf.deleteRecord(
+                          RecordPath(req.path_params.at("realmId"),
+                                     req.path_params.at("storageId"),
+                                     req.path_params.at("recordId")),
+                          status);
+                      if (status == NOT_FOUND) {
+                          res.status = 404;
+                      } else if (status == DELETED) {
+                          res.status = 204;
+                      }
                   });  // deleteRecord
 
     server.Get("/nudsf/v1/:realmId/:storageId/records/:recordId/blocks",

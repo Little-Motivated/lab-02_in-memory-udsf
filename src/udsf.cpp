@@ -52,13 +52,15 @@ std::optional<Record> UDSF::getRecord(const RecordPath &path) const {
 }
 
 void UDSF::createOrModifyRecord(
-    const RecordPath &path,
-    std::string body) {  // get-previous? read blocks from body?
+    const RecordPath &path, std::string body,
+    Status &status) {  // get-previous? read blocks from body?
     auto &records_set = realms_storages[{path.realmId, path.storageId}];
     auto record_it = records_set.find(path.recordId);
+    status = FOUND;
     if (record_it == records_set.end()) {
         records_set.insert(Record(path.recordId));
         record_it = records_set.find(path.recordId);
+        status = CREATED;
     }
     nlohmann::json j = nlohmann::json::parse(body);
 
@@ -73,7 +75,23 @@ void UDSF::createOrModifyRecord(
     std::cout << realms_storages.size() << "\n\n";
 }
 
-void UDSF::deleteRecord(const RecordPath &path) {
+void UDSF::deleteRecord(const RecordPath &path,
+                        Status &status) {  // get-previous
+    auto records_set_it = realms_storages.find(
+        std::pair<std::string, std::string>(path.realmId, path.storageId));
+    if (records_set_it == realms_storages.end()) {
+        status = NOT_FOUND;
+        return;
+    }
+    auto &records_set = (*records_set_it).second;
+    auto record = records_set.find(path.recordId);
+    if (record == records_set.end()) {
+        status = NOT_FOUND;
+        return;
+    }
+    records_set.erase(record);
+    status = DELETED;
+    return;
 }
 
 void UDSF::getBlockList(const RecordPath &path) const {

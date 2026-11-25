@@ -4,6 +4,8 @@
 
 #include <optional>
 
+enum Status { DEFAULT, NOT_FOUND, FOUND, CREATED, MODIFIED, DELETED };
+
 class Record {
 private:
     std::string recordId;
@@ -42,8 +44,9 @@ private:
 
 public:
     std::optional<Record> getRecord(const RecordPath &path) const;
-    void createOrModifyRecord(const RecordPath &path, std::string body);
-    void deleteRecord(const RecordPath &path);
+    void createOrModifyRecord(const RecordPath &path, std::string body,
+                              Status &status);
+    void deleteRecord(const RecordPath &path, Status &status);
     void getBlockList(const RecordPath &path) const;
     void getBlock(const RecordPath &path, std::string blockId) const;
     void createOrModifyBlock(const RecordPath &path, std::string blockId);
