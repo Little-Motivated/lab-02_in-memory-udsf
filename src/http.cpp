@@ -1,52 +1,77 @@
-#include "httplib.h"
-#include "udsf.h"
+#include "httplib.hpp"
+#include "nlohmann/json.hpp"
+#include "udsf.hpp"
+
+#include <optional>
 
 void registerHandlers(httplib::Server &server, UDSF &udsf) {
-    server.Get("/nudsf/v1/:realmId/:storageId/records/:recordId",
-               [](const httplib::Request &req, httplib::Response &res) {
-                   std::cout << "getRecord\n";
-                   std::cout << req.path_params.at("realmId") << "\n";
-                   std::cout << req.path_params.at("storageId") << "\n";
-                   std::cout << req.path_params.at("recordId") << "\n";
-               });  // getRecord
+    server.Get(
+        "/nudsf/v1/:realmId/:storageId/records/:recordId",
+        [&udsf](const httplib::Request &req, httplib::Response &res) {
+            std::cout << "getRecord\n";
+            std::optional<Record> record = udsf.getRecord(RecordPath(
+                req.path_params.at("realmId"), req.path_params.at("storageId"),
+                req.path_params.at("recordId")));
+            if (record == std::nullopt) {
+                res.status = 404;
+            } else {
+                res.status = 200;
+                res.set_content((*record).toJsonString(), "application/json");
+            }
+        });  // getRecord
 
     server.Put("/nudsf/v1/:realmId/:storageId/records/:recordId",
-               [](const httplib::Request &req, httplib::Response &res) {
+               [&udsf](const httplib::Request &req, httplib::Response &res) {
                    std::cout << "createOrModifyRecord\n";
-                   std::cout << req.path_params.at("realmId") << "\n";
-                   std::cout << req.path_params.at("storageId") << "\n";
-                   std::cout << req.path_params.at("recordId") << "\n";
+                   udsf.createOrModifyRecord(
+                       RecordPath(req.path_params.at("realmId"),
+                                  req.path_params.at("storageId"),
+                                  req.path_params.at("recordId")),
+                       req.body);
                });  // createOrModifyRecord
 
     server.Delete("/nudsf/v1/:realmId/:storageId/records/:recordId",
-                  [](const httplib::Request &req, httplib::Response &res) {
+                  [&udsf](const httplib::Request &req, httplib::Response &res) {
                       std::cout << "deleteRecord\n";
                       std::cout << req.path_params.at("realmId") << "\n";
                       std::cout << req.path_params.at("storageId") << "\n";
                       std::cout << req.path_params.at("recordId") << "\n";
                   });  // deleteRecord
 
-    server.Get("/nudsf/v1/:realmId/:storageId/records/:recordId",
-               [](const httplib::Request &req, httplib::Response &res) {
+    server.Get("/nudsf/v1/:realmId/:storageId/records/:recordId/blocks",
+               [&udsf](const httplib::Request &req, httplib::Response &res) {
                    std::cout << "getBlockList\n";
                    std::cout << req.path_params.at("realmId") << "\n";
                    std::cout << req.path_params.at("storageId") << "\n";
                    std::cout << req.path_params.at("recordId") << "\n";
                });  // getBlockList
 
-    server.Put("/nudsf/v1/:realmId/:storageId/records/:recordId",
-               [](const httplib::Request &req, httplib::Response &res) {
-                   std::cout << "createOrModifyBlock\n";
-                   std::cout << req.path_params.at("realmId") << "\n";
-                   std::cout << req.path_params.at("storageId") << "\n";
-                   std::cout << req.path_params.at("recordId") << "\n";
-               });  // createOrModifyBlock
+    server.Get(
+        "/nudsf/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
+        [&udsf](const httplib::Request &req, httplib::Response &res) {
+            std::cout << "getBlockList\n";
+            std::cout << req.path_params.at("realmId") << "\n";
+            std::cout << req.path_params.at("storageId") << "\n";
+            std::cout << req.path_params.at("recordId") << "\n";
+            std::cout << req.path_params.at("blockId") << "\n";
+        });  // getBlock
 
-    server.Delete("/nudsf/v1/:realmId/:storageId/records/:recordId",
-                  [](const httplib::Request &req, httplib::Response &res) {
-                      std::cout << "deleteBlock\n";
-                      std::cout << req.path_params.at("realmId") << "\n";
-                      std::cout << req.path_params.at("storageId") << "\n";
-                      std::cout << req.path_params.at("recordId") << "\n";
-                  });  // deleteBlock
+    server.Put(
+        "/nudsf/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
+        [&udsf](const httplib::Request &req, httplib::Response &res) {
+            std::cout << "createOrModifyBlock\n";
+            std::cout << req.path_params.at("realmId") << "\n";
+            std::cout << req.path_params.at("storageId") << "\n";
+            std::cout << req.path_params.at("recordId") << "\n";
+        });  // createOrModifyBlock
+
+    server.Delete(
+        "/nudsf/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
+        [&udsf](const httplib::Request &req, httplib::Response &res) {
+            std::cout << "deleteBlock\n";
+            std::cout << req.path_params.at("realmId") << "\n";
+            std::cout << req.path_params.at("storageId") << "\n";
+            std::cout << req.path_params.at("recordId") << "\n";
+            std::cout << req.path_params.at("blockId") << "\n";
+        });  // deleteBlock
 }

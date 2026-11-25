@@ -1,5 +1,5 @@
 #pragma once
-#include "httplib.h"
-#include "udsf.h"
+#include "httplib.hpp"
+#include "udsf.hpp"
 
 void registerHandlers(httplib::Server &server, UDSF &udsf);
