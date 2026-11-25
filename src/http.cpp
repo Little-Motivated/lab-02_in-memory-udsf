@@ -74,18 +74,34 @@ void registerHandlers(httplib::Server &server, UDSF &udsf) {
         "/nudsf/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
         [&udsf](const httplib::Request &req, httplib::Response &res) {
             std::cout << "createOrModifyBlock\n";
-            std::cout << req.path_params.at("realmId") << "\n";
-            std::cout << req.path_params.at("storageId") << "\n";
-            std::cout << req.path_params.at("recordId") << "\n";
+            Status status = DEFAULT;
+            udsf.createOrModifyBlock(RecordPath(req.path_params.at("realmId"),
+                                                req.path_params.at("storageId"),
+                                                req.path_params.at("recordId")),
+                                     req.path_params.at("blockId"), req.body,
+                                     status);
+            if (status == FOUND) {
+                res.status = 201;
+            } else if (status == CREATED) {
+                res.status = 204;
+            } else if (status == NOT_FOUND) {
+                res.status = 404;
+            }
         });  // createOrModifyBlock
 
     server.Delete(
         "/nudsf/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
         [&udsf](const httplib::Request &req, httplib::Response &res) {
             std::cout << "deleteBlock\n";
-            std::cout << req.path_params.at("realmId") << "\n";
-            std::cout << req.path_params.at("storageId") << "\n";
-            std::cout << req.path_params.at("recordId") << "\n";
-            std::cout << req.path_params.at("blockId") << "\n";
+            Status status = DEFAULT;
+            udsf.deleteBlock(RecordPath(req.path_params.at("realmId"),
+                                        req.path_params.at("storageId"),
+                                        req.path_params.at("recordId")),
+                             req.path_params.at("blockId"), status);
+            if (status == DELETED) {
+                res.status = 201;
+            } else if (status == NOT_FOUND) {
+                res.status = 404;
+            }
         });  // deleteBlock
 }
