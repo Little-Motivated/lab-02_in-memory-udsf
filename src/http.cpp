@@ -5,21 +5,20 @@
 #include <optional>
 
 void registerHandlers(httplib::Server &server, UDSF &udsf) {
-    server.Get("/nudsf-dr/v1/:realmId/:storageId/records/:recordId",
-               [&udsf](const httplib::Request &req, httplib::Response &res) {
-                   std::cout << "getRecord\n";
-                   std::optional<Record> record = udsf.getRecord(
-                       RecordPath(req.path_params.at("realmId"),
-                                  req.path_params.at("storageId"),
-                                  req.path_params.at("recordId")));
-                   if (record == std::nullopt) {
-                       res.status = 404;
-                   } else {
-                       res.status = 200;
-                       res.set_content((*record).toJsonString(),
-                                       "application/json");
-                   }
-               });  // getRecord
+    server.Get(
+        "/nudsf-dr/v1/:realmId/:storageId/records/:recordId",
+        [&udsf](const httplib::Request &req, httplib::Response &res) {
+            std::cout << "getRecord\n";
+            std::optional<Record> record = udsf.getRecord(RecordPath(
+                req.path_params.at("realmId"), req.path_params.at("storageId"),
+                req.path_params.at("recordId")));
+            if (record == std::nullopt) {
+                res.status = 404;
+            } else {
+                res.status = 200;
+                res.set_content((*record).toJsonString(), "application/json");
+            }
+        });  // getRecord
 
     server.Put("/nudsf-dr/v1/:realmId/:storageId/records/:recordId",
                [&udsf](const httplib::Request &req, httplib::Response &res) {
@@ -72,11 +71,24 @@ void registerHandlers(httplib::Server &server, UDSF &udsf) {
     server.Get(
         "/nudsf-dr/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
         [&udsf](const httplib::Request &req, httplib::Response &res) {
-            std::cout << "getBlockList\n";
-            std::cout << req.path_params.at("realmId") << "\n";
-            std::cout << req.path_params.at("storageId") << "\n";
-            std::cout << req.path_params.at("recordId") << "\n";
-            std::cout << req.path_params.at("blockId") << "\n";
+            std::cout << "getBlock\n";
+            auto block =
+                udsf.getBlock(RecordPath(req.path_params.at("realmId"),
+                                         req.path_params.at("storageId"),
+                                         req.path_params.at("recordId")),
+                              req.path_params.at("blockId"));
+            if (!block) {
+                res.status = 404;
+            } else {
+                std::string content = (*block)["content"];
+                std::string content_type =
+                    nlohmann::to_string((*block)["Content-Type"]);
+                if ((*block)["Content-Type"].is_string()) {
+                    content_type = (*block)["Content-Type"];
+                }
+                nlohmann::to_string((*block)["Content-Type"]);
+                res.set_content(content, content_type);
+            }
         });  // getBlock
 
     server.Put(

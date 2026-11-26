@@ -50,7 +50,8 @@ public:
                               Status &status);
     void deleteRecord(const RecordPath &path, Status &status);
     std::optional<Record> getBlockList(const RecordPath &path);
-    void getBlock(const RecordPath &path, std::string blockId, Status &status);
+    std::optional<nlohmann::json> getBlock(const RecordPath &path,
+                                           std::string blockId);
     void createOrModifyBlock(const RecordPath &path, std::string blockId,
                              std::string body, Status &status);
     void deleteBlock(const RecordPath &path, std::string blockId,

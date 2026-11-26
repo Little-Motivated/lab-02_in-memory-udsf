@@ -13,8 +13,11 @@ bool Record::operator()(const Record record) const noexcept {
 
 std::string Record::toJsonString() const {
     nlohmann::json j;
-    if (j.contains("blocks")) {
-        j["blocks"] = blocks;
+    if (blocks.size() > 0) {
+        std::cout << "Blocks added to asnwer\n";
+        for (auto block : blocks) {
+            j["blocks"].push_back(block.second);
+        }
     }
     j["meta"] = meta;
     return nlohmann::to_string(j);
@@ -28,7 +31,12 @@ std::string Record::toJsonStringMeta() const {  // not need
 
 std::string Record::toJsonStringNoMeta() const {
     nlohmann::json j;
-    j["blocks"] = blocks;
+    if (blocks.size() > 0) {
+        std::cout << "Blocks added to asnwer\n";
+        for (auto block : blocks) {
+            j.push_back(block.second);
+        }
+    }
     return nlohmann::to_string(j);
 }
 
@@ -102,8 +110,20 @@ std::optional<Record> UDSF::getBlockList(const RecordPath &path) {
     return record;
 }
 
-void UDSF::getBlock(const RecordPath &path, std::string blockId,
-                    Status &status) {
+std::optional<nlohmann::json> UDSF::getBlock(const RecordPath &path,
+                                             std::string blockId) {
+    auto record = getBlockList(path);
+    if (!record) {
+        return std::nullopt;
+    }
+
+    nlohmann::json j((*record).blocks);
+    if (j.contains(blockId)) {
+        std::cout << "dgsfgbda\n\n";
+        std::cout << nlohmann::to_string(j[blockId]) << "\n";
+        return j[blockId];
+    }
+    return std::nullopt;
 }
 
 void UDSF::createOrModifyBlock(const RecordPath &path, std::string blockId,
