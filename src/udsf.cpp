@@ -13,7 +13,15 @@ bool Record::operator()(const Record record) const noexcept {
 
 std::string Record::toJsonString() const {
     nlohmann::json j;
-    j["blocks"] = blocks;
+    if (j.contains("blocks")) {
+        j["blocks"] = blocks;
+    }
+    j["meta"] = meta;
+    return nlohmann::to_string(j);
+}
+
+std::string Record::toJsonStringMeta() const {  // not need
+    nlohmann::json j;
     j["meta"] = meta;
     return nlohmann::to_string(j);
 }
@@ -52,10 +60,20 @@ void UDSF::createOrModifyRecord(
         record_it = records_set.find(path.recordId);
         status = CREATED;
     }
+    std::cout << "Parse\n";
     nlohmann::json j = nlohmann::json::parse(body);  // body = "" -> exception
 
     Record new_record(*record_it);
-    new_record.meta = nlohmann::to_string(j["meta"]);
+    std::cout << "Write meta\n";
+    new_record.meta = j["meta"];
+    if (j.contains("blocks")) {
+        std::cout << "Write blocks\n";
+        for (auto block : j["blocks"]) {
+            new_record.blocks[block["Content-Id"]] = block;  // check block,
+                                                             // content-type...
+        }
+        std::cout << "Done\n";
+    }
     records_set.erase(record_it);
     records_set.insert(new_record);
 }
@@ -66,7 +84,7 @@ void UDSF::deleteRecord(const RecordPath &path,
         status = NOT_FOUND;
         return;
     }
-    auto records_set = realms_storages[{path.realmId, path.storageId}];
+    auto &records_set = realms_storages[{path.realmId, path.storageId}];
     auto record = records_set.find(path.recordId);
     if (record == records_set.end()) {
         status = NOT_FOUND;
@@ -76,10 +94,16 @@ void UDSF::deleteRecord(const RecordPath &path,
     status = DELETED;
 }
 
-void UDSF::getBlockList(const RecordPath &path) const {
+std::optional<Record> UDSF::getBlockList(const RecordPath &path) {
+    auto record = getRecord(path);
+    if (!record || (*record).blocks.size() == 0) {
+        return std::nullopt;
+    }
+    return record;
 }
 
-void UDSF::getBlock(const RecordPath &path, std::string blockId) {
+void UDSF::getBlock(const RecordPath &path, std::string blockId,
+                    Status &status) {
 }
 
 void UDSF::createOrModifyBlock(const RecordPath &path, std::string blockId,

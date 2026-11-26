@@ -5,22 +5,23 @@
 #include <optional>
 
 void registerHandlers(httplib::Server &server, UDSF &udsf) {
-    server.Get(
-        "/nudsf/v1/:realmId/:storageId/records/:recordId",
-        [&udsf](const httplib::Request &req, httplib::Response &res) {
-            std::cout << "getRecord\n";
-            std::optional<Record> record = udsf.getRecord(RecordPath(
-                req.path_params.at("realmId"), req.path_params.at("storageId"),
-                req.path_params.at("recordId")));
-            if (record == std::nullopt) {
-                res.status = 404;
-            } else {
-                res.status = 200;
-                res.set_content((*record).toJsonString(), "application/json");
-            }
-        });  // getRecord
+    server.Get("/nudsf-dr/v1/:realmId/:storageId/records/:recordId",
+               [&udsf](const httplib::Request &req, httplib::Response &res) {
+                   std::cout << "getRecord\n";
+                   std::optional<Record> record = udsf.getRecord(
+                       RecordPath(req.path_params.at("realmId"),
+                                  req.path_params.at("storageId"),
+                                  req.path_params.at("recordId")));
+                   if (record == std::nullopt) {
+                       res.status = 404;
+                   } else {
+                       res.status = 200;
+                       res.set_content((*record).toJsonString(),
+                                       "application/json");
+                   }
+               });  // getRecord
 
-    server.Put("/nudsf/v1/:realmId/:storageId/records/:recordId",
+    server.Put("/nudsf-dr/v1/:realmId/:storageId/records/:recordId",
                [&udsf](const httplib::Request &req, httplib::Response &res) {
                    std::cout << "createOrModifyRecord\n";
                    Status status = DEFAULT;
@@ -36,7 +37,7 @@ void registerHandlers(httplib::Server &server, UDSF &udsf) {
                    }
                });  // createOrModifyRecord
 
-    server.Delete("/nudsf/v1/:realmId/:storageId/records/:recordId",
+    server.Delete("/nudsf-dr/v1/:realmId/:storageId/records/:recordId",
                   [&udsf](const httplib::Request &req, httplib::Response &res) {
                       std::cout << "deleteRecord\n";
                       Status status = DEFAULT;
@@ -52,16 +53,24 @@ void registerHandlers(httplib::Server &server, UDSF &udsf) {
                       }
                   });  // deleteRecord
 
-    server.Get("/nudsf/v1/:realmId/:storageId/records/:recordId/blocks",
+    server.Get("/nudsf-dr/v1/:realmId/:storageId/records/:recordId/blocks",
                [&udsf](const httplib::Request &req, httplib::Response &res) {
                    std::cout << "getBlockList\n";
-                   std::cout << req.path_params.at("realmId") << "\n";
-                   std::cout << req.path_params.at("storageId") << "\n";
-                   std::cout << req.path_params.at("recordId") << "\n";
+                   std::optional<Record> record = udsf.getBlockList(
+                       RecordPath(req.path_params.at("realmId"),
+                                  req.path_params.at("storageId"),
+                                  req.path_params.at("recordId")));
+                   if (record == std::nullopt) {
+                       res.status = 404;
+                   } else {
+                       res.status = 200;
+                       res.set_content((*record).toJsonStringNoMeta(),
+                                       "application/json");
+                   }
                });  // getBlockList
 
     server.Get(
-        "/nudsf/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
+        "/nudsf-dr/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
         [&udsf](const httplib::Request &req, httplib::Response &res) {
             std::cout << "getBlockList\n";
             std::cout << req.path_params.at("realmId") << "\n";
@@ -71,7 +80,7 @@ void registerHandlers(httplib::Server &server, UDSF &udsf) {
         });  // getBlock
 
     server.Put(
-        "/nudsf/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
+        "/nudsf-dr/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
         [&udsf](const httplib::Request &req, httplib::Response &res) {
             std::cout << "createOrModifyBlock\n";
             Status status = DEFAULT;
@@ -90,7 +99,7 @@ void registerHandlers(httplib::Server &server, UDSF &udsf) {
         });  // createOrModifyBlock
 
     server.Delete(
-        "/nudsf/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
+        "/nudsf-dr/v1/:realmId/:storageId/records/:recordId/blocks/:blockId",
         [&udsf](const httplib::Request &req, httplib::Response &res) {
             std::cout << "deleteBlock\n";
             Status status = DEFAULT;

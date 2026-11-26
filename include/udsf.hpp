@@ -11,8 +11,8 @@ private:
     std::string recordId;
 
 public:
-    std::string meta;
-    std::map<std::string, std::string> blocks;
+    nlohmann::json meta;
+    std::map<std::string, nlohmann::json> blocks;
     bool operator<(std::string _recordId) const noexcept;
     bool operator()(const Record) const noexcept;
 
@@ -20,6 +20,7 @@ public:
     }
 
     std::string toJsonString() const;
+    std::string toJsonStringMeta() const;
     std::string toJsonStringNoMeta() const;
 
     friend bool operator<(const Record &lhs, const Record &rhs) noexcept;
@@ -48,8 +49,8 @@ public:
     void createOrModifyRecord(const RecordPath &path, std::string body,
                               Status &status);
     void deleteRecord(const RecordPath &path, Status &status);
-    void getBlockList(const RecordPath &path) const;
-    void getBlock(const RecordPath &path, std::string blockId);
+    std::optional<Record> getBlockList(const RecordPath &path);
+    void getBlock(const RecordPath &path, std::string blockId, Status &status);
     void createOrModifyBlock(const RecordPath &path, std::string blockId,
                              std::string body, Status &status);
     void deleteBlock(const RecordPath &path, std::string blockId,
