@@ -120,14 +120,17 @@ std::optional<nlohmann::json> UDSF::getBlock(const RecordPath &path,
     nlohmann::json j((*record).blocks);
     if (j.contains(blockId)) {
         std::cout << "dgsfgbda\n\n";
-        std::cout << nlohmann::to_string(j[blockId]) << "\n";
+        std::cout << (j[blockId]) << "\n";
+        // std::string block = j[blockId];
+        // return nlohmann::json::parse(block);
         return j[blockId];
     }
     return std::nullopt;
 }
 
 void UDSF::createOrModifyBlock(const RecordPath &path, std::string blockId,
-                               std::string body, Status &status) {
+                               std::string body, std::string content_type,
+                               Status &status) {  // content-type
     if (realms_storages.count({path.realmId, path.storageId}) == 0) {
         status = NOT_FOUND;
         return;
@@ -140,10 +143,15 @@ void UDSF::createOrModifyBlock(const RecordPath &path, std::string blockId,
         return;
     }
     Record new_record(*record_it);
-    if (new_record.blocks.count(blockId) == 0) {
+    if (new_record.blocks.count(blockId) == 0 ||
+        new_record.blocks[blockId] == "") {
         status = CREATED;
     }
-    new_record.blocks[blockId] = body;
+    nlohmann::json j;  // = nlohmann::json::parse(body);
+    j["Content-Id"] = blockId;
+    j["Content-Type"] = content_type;
+    j["content"] = body;  // Content? no parse?
+    new_record.blocks[blockId] = j;
     records_set.erase(record_it);
     records_set.insert(new_record);
 }

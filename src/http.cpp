@@ -14,7 +14,8 @@ void getRecordHandler(const httplib::Request &req, httplib::Response &res,
         res.status = 404;
     } else {
         res.status = 200;
-        res.set_content((*record).toJsonString(), "application/json");
+        res.set_content((*record).toJsonString(),
+                        "application/json");  // get content type from record
     }
 }
 
@@ -72,7 +73,11 @@ void getBlockHandler(const httplib::Request &req, httplib::Response &res,
     if (!block) {
         res.status = 404;
     } else {
+        std::cout << "Try\n";
+        std::cout << "block type: " << (*block).type_name() << "\n";
+        std::cout << "block dump: " << (*block).dump() << "\n";
         std::string content = (*block)["content"];
+        std::cout << "Success\n";
         std::string content_type =
             nlohmann::to_string((*block)["Content-Type"]);
         if ((*block)["Content-Type"].is_string()) {
@@ -90,10 +95,11 @@ void createOrModifyBlockHandler(const httplib::Request &req,
     udsf.createOrModifyBlock(RecordPath(req.path_params.at("realmId"),
                                         req.path_params.at("storageId"),
                                         req.path_params.at("recordId")),
-                             req.path_params.at("blockId"), req.body, status);
-    if (status == FOUND) {
+                             req.path_params.at("blockId"), req.body,
+                             req.get_header_value("Content-Type"), status);
+    if (status == CREATED) {
         res.status = 201;
-    } else if (status == CREATED) {
+    } else if (status == FOUND) {
         res.status = 204;
     } else if (status == NOT_FOUND) {
         res.status = 404;

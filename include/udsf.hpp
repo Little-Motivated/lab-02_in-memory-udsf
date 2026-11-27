@@ -53,7 +53,8 @@ public:
     std::optional<nlohmann::json> getBlock(const RecordPath &path,
                                            std::string blockId);
     void createOrModifyBlock(const RecordPath &path, std::string blockId,
-                             std::string body, Status &status);
+                             std::string body, std::string content_type,
+                             Status &status);
     void deleteBlock(const RecordPath &path, std::string blockId,
                      Status &status);
 
