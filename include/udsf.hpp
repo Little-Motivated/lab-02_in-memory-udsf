@@ -7,22 +7,20 @@
 enum Status { DEFAULT, NOT_FOUND, FOUND, CREATED, MODIFIED, DELETED };
 
 class Record {
-private:
-    std::string recordId;
-
 public:
+    std::string recordId;
     nlohmann::json meta;
     std::map<std::string, nlohmann::json> blocks;
-    bool operator<(std::string _recordId) const noexcept;
-    bool operator()(const Record) const noexcept;
+
+    Record() = default;
 
     Record(std::string _recordId) : recordId(_recordId) {
     }
 
     std::string toJsonString() const;
-    std::string toJsonStringMeta() const;
     std::string toJsonStringNoMeta() const;
 
+    bool operator()(const Record) const noexcept;
     friend bool operator<(const Record &lhs, const Record &rhs) noexcept;
 };
 
@@ -40,18 +38,21 @@ public:
 
 class UDSF {
 private:
-    std::map<std::pair<std::string, std::string>, std::set<Record>>
+    std::map<std::pair<std::string, std::string>, std::map<std::string, Record>>
         realms_storages;
     // void findRecord(RecordPath &path) const;
 
+    std::optional<std::reference_wrapper<Record>>
+    getRecordLink(const RecordPath &path);
+
 public:
-    std::optional<Record> getRecord(const RecordPath &path);
+    std::optional<Record> getRecord(const RecordPath &path) const;
     void createOrModifyRecord(const RecordPath &path, std::string body,
                               Status &status);
     void deleteRecord(const RecordPath &path, Status &status);
-    std::optional<Record> getBlockList(const RecordPath &path);
+    std::optional<Record> getBlockList(const RecordPath &path) const;
     std::optional<nlohmann::json> getBlock(const RecordPath &path,
-                                           std::string blockId);
+                                           std::string blockId) const;
     void createOrModifyBlock(const RecordPath &path, std::string blockId,
                              std::string body, std::string content_type,
                              Status &status);
