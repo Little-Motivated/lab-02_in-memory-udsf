@@ -64,7 +64,7 @@ std::optional<Record> UDSF::getRecord(const RecordPath &path) const {
 void UDSF::createOrModifyRecord(const RecordPath &path, std::string body,
                                 Status &status) {
     // get-previous? read blocks from body?
-    status = FOUND;
+    status = MODIFIED;
     auto &records_map = realms_storages[{path.realmId, path.storageId}];
     auto &record = records_map[path.recordId];
     if (record.recordId == "") {
@@ -127,7 +127,7 @@ void UDSF::createOrModifyBlock(
     const RecordPath &path, std::string blockId, std::string body,
     std::string content_type,
     Status &status) {  // header instead of content-type
-    status = FOUND;
+    status = MODIFIED;
     auto records_map_it = realms_storages.find({path.realmId, path.storageId});
     if (records_map_it == realms_storages.end()) {
         status = NOT_FOUND;

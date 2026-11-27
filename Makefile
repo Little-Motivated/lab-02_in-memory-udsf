@@ -1,7 +1,7 @@
 TARGET = udsf
 
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude -pthread
+CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
 LDFLAGS = -pthread
 
 SRCDIR = src

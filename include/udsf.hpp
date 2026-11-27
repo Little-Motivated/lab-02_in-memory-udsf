@@ -1,10 +1,9 @@
 #pragma once
-#include "httplib.hpp"
 #include "nlohmann/json.hpp"
 
 #include <optional>
 
-enum Status { DEFAULT, NOT_FOUND, FOUND, CREATED, MODIFIED, DELETED };
+enum Status { DEFAULT, NOT_FOUND, CREATED, MODIFIED, DELETED };
 
 class Record {
 public:

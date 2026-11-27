@@ -1,8 +1,11 @@
+#include "server.hpp"
 #include "httplib.hpp"
 #include "nlohmann/json.hpp"
 #include "udsf.hpp"
 
 #include <optional>
+
+namespace {
 
 void getRecordHandler(const httplib::Request &req, httplib::Response &res,
                       UDSF &udsf) {
@@ -29,7 +32,7 @@ void createOrModifyRecordHandler(const httplib::Request &req,
                               req.body, status);
     if (status == CREATED) {
         res.status = 201;
-    } else if (status == FOUND) {
+    } else if (status == MODIFIED) {
         res.status = 204;
     }
 }
@@ -99,7 +102,7 @@ void createOrModifyBlockHandler(const httplib::Request &req,
                              req.get_header_value("Content-Type"), status);
     if (status == CREATED) {
         res.status = 201;
-    } else if (status == FOUND) {
+    } else if (status == MODIFIED) {
         res.status = 204;
     } else if (status == NOT_FOUND) {
         res.status = 404;
@@ -121,7 +124,24 @@ void deleteBlockHandler(const httplib::Request &req, httplib::Response &res,
     }
 }
 
-void registerHandlers(httplib::Server &server, UDSF &udsf) {
+};  // namespace
+
+void UDSFServer::run(std::string host, unsigned int port) {
+    server.set_exception_handler([](const httplib::Request &req,
+                                    httplib::Response &res,
+                                    std::exception_ptr ep) {
+        try {
+            std::rethrow_exception(ep);
+        } catch (const std::exception &e) {
+            res.status = 500;
+            res.set_content(std::string("Error: ") + e.what(), "text/plain");
+        }
+    });
+    registerHandlers(server, udsf);
+    server.listen(host, port);
+}
+
+void UDSFServer::registerHandlers(httplib::Server &server, UDSF &udsf) {
     server.Get("/nudsf-dr/v1/:realmId/:storageId/records/:recordId",
                [&udsf](const httplib::Request &req, httplib::Response &res) {
                    getRecordHandler(req, res, udsf);
